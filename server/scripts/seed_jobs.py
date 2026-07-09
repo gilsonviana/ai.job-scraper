@@ -54,7 +54,7 @@ def extract_seniority_level(job_title):
   return None
 
 
-def seed_jobs(csv_path, db_url="sqlite:///./server/data.db"):
+def seed_jobs(csv_path, db_url="sqlite:///./data.db"):
   """Load jobs from CSV and insert into database."""
   engine = create_engine(db_url)
   Base.metadata.create_all(engine)
