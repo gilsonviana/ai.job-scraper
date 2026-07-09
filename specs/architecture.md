@@ -42,26 +42,21 @@ JSON Response → [Frontend] Display Results
 
 ---
 
-## API Endpoints (to be defined)
+## API Endpoints
 
-- `POST /extract` — Extract job data from URL or PDF
-- `GET /extractions/:id` — Retrieve saved extraction
-- `GET /extractions` — List all extractions
+Fully specified in `/specs/api.md`:
+
+- `POST /extract` — Extract job data from URL or PDF (multipart/form-data or JSON)
+- `GET /extractions` — List all extractions with pagination and filtering
+- `GET /extractions/:id` — Retrieve a single extraction by ID
 
 ---
 
-## Database Schema (to be defined)
+## Database Schema
 
-**Job Extractions Table**
-- id (UUID)
-- source_type (enum: url | pdf)
-- source_url (nullable)
-- job_title
-- required_stack (array)
-- location
-- salary_min, salary_max
-- availability
-- created_at
+Fully specified in `/specs/data-model.md`. Key table: **job_extractions**
+
+Fields include: id, source_type, source_url, job_title, required_stack, location, salary_min/max, seniority_level, remote_policy, key_responsibilities, nice_to_have, confidence_score, created_at, updated_at, plus indexes on created_at and source_type.
 
 ---
 

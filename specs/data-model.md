@@ -43,6 +43,35 @@
 
 ---
 
+## NLP Extraction Pipeline
+
+### Models Used
+
+| Field | Model | Library | Notes |
+|-------|-------|---------|-------|
+| job_title | Named Entity Recognition (en_core_web_lg) | spaCy | Entity type: PERSON (in job context) or uses custom patterns |
+| required_stack | Tech stack classifier | Hugging Face distilbert | Fine-tuned to recognize technology names and tools |
+| location | Named Entity Recognition (en_core_web_lg) | spaCy | Entity types: GPE (geopolitical), LOC (location) |
+| salary_range | Regex + NER | spaCy + custom patterns | Pattern matching for currency symbols and number ranges |
+| seniority_level | Zero-shot classification | Hugging Face BART (facebook/bart-large-mnli) | Labels: "Junior", "Mid", "Senior", "Lead", "Not specified" |
+| remote_policy | Zero-shot classification | Hugging Face BART | Labels: "Remote", "On-site", "Hybrid", "Not specified" |
+| key_responsibilities | Extractive summarization | Hugging Face transformers (facebook/bart-large-cnn) | Top 3–5 sentences by importance |
+
+### Confidence Scoring
+
+- **Required fields** (job_title, location): If confidence < 0.7, still return but flag as uncertain in response
+- **Optional fields** (salary, seniority, remote): If confidence < 0.5, return `null` instead of uncertain value
+- **Overall confidence_score**: Weighted average of all field confidences, clamped to [0.0, 1.0]
+
+### Performance Constraints
+
+- **Timeout:** 30 seconds per extraction (abort and return 500 EXTRACTION_FAILED if exceeded)
+- **Max input size:** 50KB of text (51,200 bytes)
+- **Concurrency:** Single-worker by default (one extraction at a time); scale with Uvicorn `--workers` if needed
+- **Memory:** Models loaded once on startup (spaCy en_core_web_lg ~40MB, BART ~1.6GB)
+
+---
+
 ## Pydantic Schema (server/app/schemas/job.py)
 
 ```python
@@ -75,23 +104,36 @@ class JobExtractionResponse(BaseModel):
 ## SQLAlchemy Model (server/app/models/job.py)
 
 ```python
-from sqlalchemy import Column, String, Integer, Float, JSON, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-import uuid
+from sqlalchemy import Column, String, Integer, Float, JSON, DateTime, Index, Uuid, func
 from app.models import Base
+import uuid
 
 class JobExtraction(Base):
     __tablename__ = "job_extractions"
 
-    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    source_type = Column(String)
-    source_url = Column(String, nullable=True)
-    source_content = Column(String, nullable=True)
-    job_title = Column(String)
-    required_stack = Column(JSON)
-    location = Column(String)
+    id = Column(Uuid, primary_key=True, default=uuid.uuid4)
+    source_type = Column(String(10), nullable=False)  # "url" or "pdf"
+    source_url = Column(String(2048), nullable=True)
+    source_content = Column(String(50000), nullable=True)  # Raw HTML/PDF text
+    
+    # Extracted fields
+    job_title = Column(String(255), nullable=False)
+    required_stack = Column(JSON, nullable=False, default=list)
+    location = Column(String(255), nullable=False)
     salary_min = Column(Integer, nullable=True)
     salary_max = Column(Integer, nullable=True)
-    # ... other fields
-    created_at = Column(DateTime, server_default=func.now())
+    availability = Column(String(255), nullable=True)
+    seniority_level = Column(String(100), nullable=True)
+    remote_policy = Column(String(50), nullable=True)
+    key_responsibilities = Column(JSON, nullable=False, default=list)
+    nice_to_have = Column(JSON, nullable=False, default=list)
+    
+    confidence_score = Column(Float, nullable=False, default=0.0)
+    created_at = Column(DateTime, server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
+
+    __table_args__ = (
+        Index('ix_created_at', 'created_at'),
+        Index('ix_source_type', 'source_type'),
+    )
 ```
