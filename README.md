@@ -21,6 +21,17 @@ python main.py
 
 Server runs on `http://localhost:8000`
 
+### Seed Test Data (Optional)
+
+Populate the database with 220 test job records from the fixture CSV:
+
+```bash
+cd server
+python scripts/seed_jobs.py
+```
+
+This parses job titles, salaries, tech stacks, and responsibilities into the database.
+
 ### Frontend Setup
 
 ```bash
@@ -56,6 +67,8 @@ cp client/.env.example client/.env
 │   │   ├── utils/         # Helpers (PDF parsing, etc)
 │   │   ├── config.py      # Settings
 │   │   └── database.py    # DB connection
+│   ├── scripts/           # Utility scripts (seeding, etc)
+│   ├── fixtures/          # Test data (CSV files)
 │   ├── tests/             # pytest test suite
 │   ├── main.py            # FastAPI app entry point
 │   └── requirements.txt    # Python dependencies
