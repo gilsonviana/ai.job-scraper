@@ -40,4 +40,5 @@ class JobExtraction(Base):
     __table_args__ = (
         Index("ix_created_at", "created_at"),
         Index("ix_source_type", "source_type"),
+        Index("ix_seniority_level", "seniority_level"),
     )

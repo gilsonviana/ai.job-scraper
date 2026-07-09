@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const baseURL = ((import.meta as any).env?.VITE_API_BASE_URL as string | undefined) || 'http://localhost:8000';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: `${baseURL}/api`,
@@ -11,7 +11,6 @@ const apiClient: AxiosInstance = axios.create({
 });
 
 // Retry interceptor: retries on 408, 429, and 5xx
-let retryCount = 0;
 const MAX_RETRIES = 3;
 
 apiClient.interceptors.response.use(
@@ -23,18 +22,19 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    config.retryCount = config.retryCount || 0;
+    let retryCount = config.retryCount || 0;
 
     const shouldRetry =
-      config.retryCount < MAX_RETRIES &&
+      retryCount < MAX_RETRIES &&
       (error.status === 408 ||
         error.status === 429 ||
         (error.status !== undefined && error.status >= 500));
 
     if (shouldRetry) {
-      config.retryCount += 1;
+      retryCount += 1;
+      config.retryCount = retryCount;
       // Exponential backoff: 1s, 2s, 4s
-      const delay = Math.pow(2, config.retryCount - 1) * 1000;
+      const delay = Math.pow(2, retryCount - 1) * 1000;
       await new Promise((resolve) => setTimeout(resolve, delay));
       return apiClient(config);
     }

@@ -9,7 +9,7 @@ from starlette.requests import Request
 from app.config import settings
 from app.models import Base
 from app.database import engine
-from app.routes import job
+from app.routes import job, skills
 from app.services.nlp import NLPService
 
 app = FastAPI(title=settings.app_name, debug=settings.debug)
@@ -43,6 +43,7 @@ app.add_middleware(
 )
 
 app.include_router(job.router)
+app.include_router(skills.router)
 
 
 @app.on_event("startup")
