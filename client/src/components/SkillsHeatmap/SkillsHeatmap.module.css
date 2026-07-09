@@ -50,6 +50,7 @@
   word-break: break-word;
   max-width: 100px;
   writing-mode: horizontal-tb;
+  vertical-align: middle;
 }
 
 .cell {
@@ -59,9 +60,8 @@
   transition: opacity 150ms;
   min-width: 40px;
   min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  vertical-align: middle;
+  line-height: 1.5;
   font-size: 0.7rem;
   font-weight: 500;
   color: #374151;
