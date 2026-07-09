@@ -1,7 +1,7 @@
 # Job Scraper Project Constitution
 
-**Project:** AI-powered Job Description Scraper  
-**Purpose:** Extract structured information from job postings (HTML/PDF) using NLP  
+**Project:** AI-powered Job Description Scraper
+**Purpose:** Extract structured information from job postings (HTML/PDF) using NLP
 **Monorepo:** `/server` (Python/FastAPI) + `/client` (React/TypeScript) with pnpm workspaces
 
 ---
@@ -261,17 +261,5 @@ ai.job-scraper/
 | Pydantic v2 | Validation, serialization, and type hints out of the box |
 | spaCy + transformers for NLP | Pre-trained models, fast inference, no training needed |
 
----
-
-## Future Considerations (Out of Scope Now)
-
-- [ ] Add authentication (JWT) when multi-user support needed
-- [ ] Migrate to PostgreSQL if single-file DB becomes bottleneck
-- [ ] Add job posting persistence (save, filter, export)
-- [ ] Implement webhooks for job feed integration
-- [ ] Add analytics/monitoring (Sentry, LogRocket)
-
----
-
-**Last Updated:** 2026-07-09  
+**Last Updated:** 2026-07-09
 **Maintainer:** Job Scraper Team
